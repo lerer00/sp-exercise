@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { fetcher } from '../../utilities/fetcher'
 
-type Data = {
+export type TransactionsHistory = {
   createdAt: Date,
   amount: number,
   currency: string,
@@ -10,7 +10,7 @@ type Data = {
   from: Object
 }
 
-export default (_req: NextApiRequest, res: NextApiResponse<Data>) => {
+export default (_req: NextApiRequest, res: NextApiResponse<TransactionsHistory>) => {
   try {
     var transactionsPromise = fetcher('https://shakepay.github.io/programming-exercise/web/transaction_history.json');
     transactionsPromise.then(result => {

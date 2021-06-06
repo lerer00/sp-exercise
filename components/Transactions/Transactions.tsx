@@ -1,7 +1,9 @@
 import styles from './transactions.module.css';
-import { FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '../../utilities/fetcher';
+import { TransactionsHistory } from '../../pages/api/transactions'
+import Balance from '../Balance/Balance';
 
 interface Props {
 }
@@ -16,13 +18,17 @@ const Transactions: FunctionComponent<Props> = () => {
     return (
         <>
             <div className={styles.transactions}>
-                <ul>
-                    {
-                        transactions.map((t: any, i: number) => {
-                            <li key={i}>{t}</li>
-                        })
-                    }
+                <ul className={styles.transactions}>
+                    {transactions !== undefined && transactions.map((t: TransactionsHistory, i: number) => {
+                        return <li key={i}>
+                            <p>{t.createdAt}</p>
+                            <p>{t.amount}{t.currency}</p>
+                        </li>
+                    })}
                 </ul>
+                <div className={styles.balance}>
+                    <Balance transactions={transactions}></Balance>
+                </div>
             </div>
         </>
     )

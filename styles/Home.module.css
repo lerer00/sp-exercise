@@ -1,6 +1,7 @@
 .container {
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 
 .main {
@@ -10,9 +11,11 @@
 }
 
 .transactions {
+  overflow-y: auto;
+  overflow-x: hidden;
   background-color: #f4f4f4;
 }
 
 .graph {
-  background-color: #595959;
+  background-color: #ffffff;
 }
