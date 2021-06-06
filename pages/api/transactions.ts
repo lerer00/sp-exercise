@@ -7,7 +7,8 @@ export type TransactionsHistory = {
   currency: string,
   type: string,
   direction: string,
-  from: Object
+  from?: Object,
+  to?: Object
 }
 
 export default (_req: NextApiRequest, res: NextApiResponse<TransactionsHistory>) => {

@@ -9,13 +9,13 @@ import { useResizeDetector } from 'react-resize-detector';
 interface Props {
 }
 
-const updateChart = (line: any, points: number[]) => {
+const updateGraph = (line: any, points: number[]) => {
     line.to({
         points: points
     })
 };
 
-function scaleDataToChart(transactions: Array<TransactionsHistory>, graphWidth: number, graphHeight: number): Array<number> {
+function reloadGraph(transactions: Array<TransactionsHistory>, rates: any, graphWidth: number, graphHeight: number): Array<number> {
     // What size you want the chart to be in the container.
     const chartEnd = graphWidth;
     const chartTop = graphHeight / 2;
@@ -28,7 +28,18 @@ function scaleDataToChart(transactions: Array<TransactionsHistory>, graphWidth: 
 
     let cumulative: number = 0;
     for (var i = 0; i < transactions.length; i++) {
-        cumulative += transactions[i].amount;
+        if (transactions[i]['to'] !== undefined) {
+            if (transactions[i]['from'] !== undefined) {
+                // This is a conversion.
+                cumulative -= transactions[i].amount;
+            } else {
+                // This is an add.
+                cumulative -= transactions[i].amount;
+            }
+        } else {
+            // This is a remove;
+            cumulative += transactions[i].amount;
+        }
         highest = { x: 0, y: cumulative };
     }
 
@@ -39,7 +50,19 @@ function scaleDataToChart(transactions: Array<TransactionsHistory>, graphWidth: 
 
     cumulative = 0;
     for (var i = 0; i < transactions.length; i++) {
-        cumulative += transactions[i].amount;
+        if (transactions[i]['to'] !== undefined) {
+            if (transactions[i]['from'] !== undefined) {
+                // This is a conversion.
+                cumulative -= transactions[i].amount;
+            } else {
+                // This is an add.
+                cumulative -= transactions[i].amount;
+            }
+        } else {
+            // This is a remove;
+            cumulative += transactions[i].amount;
+        }
+        console.log(i * distance, -(cumulative - (cumulative * decrease)))
         // This is x.
         lineData.push((i * distance));
         // This is y.
@@ -61,23 +84,20 @@ const Graph: FunctionComponent<Props> = () => {
         fetcher
     )
 
-    useEffect(() => {
-        if (graphWidth !== undefined && graphHeight !== undefined && transactions !== undefined) {
-            var lineData = scaleDataToChart(transactions, Number(graphWidth), Number(graphHeight));
-
-            const line = lineRef.current;
-            updateChart(line, lineData);
-        }
-    }, [graphWidth, graphHeight]);
+    // fetching rates.
+    const { data: rates, error: ratesError } = useSWR(
+        () => `/api/rates`,
+        fetcher
+    )
 
     useEffect(() => {
-        if (graphWidth !== undefined && graphHeight !== undefined && transactions) {
-            var lineData = scaleDataToChart(transactions, Number(graphWidth), Number(graphHeight));
+        if (graphWidth !== undefined && graphHeight !== undefined && transactions !== undefined && rates !== undefined) {
+            var lineData = reloadGraph(transactions, rates, Number(graphWidth), Number(graphHeight));
 
             const line = lineRef.current;
-            updateChart(line, lineData);
+            updateGraph(line, lineData);
         }
-    }, [transactions]);
+    }, [graphWidth, graphHeight, transactions, rates]);
 
     return (
         <>
@@ -92,6 +112,14 @@ const Graph: FunctionComponent<Props> = () => {
                             x={0}
                             y={graphHeight || 0}
                             points={[0, 0, 600, 0]}
+                            tension={0.2}
+                            strokeWidth={2}
+                            stroke={'#595959'}
+                        />
+                        <Line
+                            x={0}
+                            y={graphHeight || 0}
+                            points={[0, 0, graphWidth || 0, 0]}
                             tension={0.2}
                             strokeWidth={2}
                             stroke={'#595959'}
